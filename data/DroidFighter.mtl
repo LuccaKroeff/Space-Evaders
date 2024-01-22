@@ -1,0 +1,13 @@
+# Blender MTL File: 'Spaceship2.blend'
+# Material Count: 1
+
+newmtl Material.001
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.231884 0.231884 0.231884
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd Spaceship2UVLayout.png
+map_Bump Spaceship2Normal.png
