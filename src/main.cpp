@@ -224,6 +224,12 @@ GLint g_bbox_max_uniform;
 // Número de texturas carregadas pela função LoadTextureImage()
 GLuint g_NumLoadedTextures = 0;
 
+// Definindo variáveis que colocam a câmera em uma posição inicial
+bool tecla_W_pressionada = false;
+bool tecla_A_pressionada = false;
+bool tecla_S_pressionada = false;
+bool tecla_D_pressionada = false;
+
 int main(int argc, char* argv[])
 {
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
@@ -298,17 +304,13 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
 
     // Carregamos duas imagens para serem utilizadas como textura
-    LoadTextureImage("../../data/tc-earth_daymap_surface.jpg");      // TextureImage0
+    LoadTextureImage("../../data/DiffuseTexture.png");      // TextureImage0
     LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
-    ObjModel spheremodel("../../data/sphere.obj");
+    ObjModel spheremodel("../../data/DroidFighter.obj");
     ComputeNormals(&spheremodel);
     BuildTrianglesAndAddToVirtualScene(&spheremodel);
-
-    ObjModel bunnymodel("../../data/bunny.obj");
-    ComputeNormals(&bunnymodel);
-    BuildTrianglesAndAddToVirtualScene(&bunnymodel);
 
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
@@ -331,6 +333,24 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    float speed = 0.5f; // Velocidade da câmera
+    float prev_time = (float)glfwGetTime();
+    float delta_t;
+
+    glm::vec4 camera_position_c = glm::vec4(0.0f, 0.40f, -4.3f, 1.0f);  // Ponto "c", centro da câmera
+    glm::vec4 camera_view_vector = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);   // Vetor "view", sentido para onde a câmera está virada
+    glm::vec4 camera_up_vector = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);     // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+    glm::vec4 spaceship_position = glm::vec4(camera_position_c.x, camera_position_c.y - 0.5f, camera_position_c.z + 3.0f, 1.0f);
+    glm::vec4 displacement = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);         // Vetor que define o deslocamento da nave em relação ao início
+
+    // Definindo dimensões da nave
+    float spaceship_width = 4.0f;
+    float spaceship_height = 2.0;
+    float spaceship_depth = 1.5;
+
+    // Definindo field of view
+    float field_of_view = 3.141592 / 3.0f;
+
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -342,7 +362,7 @@ int main(int argc, char* argv[])
         // Conversaremos sobre sistemas de cores nas aulas de Modelos de Iluminação.
         //
         //           R     G     B     A
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // "Pintamos" todos os pixels do framebuffer com a cor definida acima,
         // e também resetamos todos os pixels do Z-buffer (depth buffer).
@@ -352,21 +372,54 @@ int main(int argc, char* argv[])
         // os shaders de vértice e fragmentos).
         glUseProgram(g_GpuProgramID);
 
+
+        // Atualiza delta de tempo
+        float current_time = (float)glfwGetTime();
+        delta_t = current_time - prev_time;
+        prev_time = current_time;
+
+        if (tecla_W_pressionada)
+        {
+            // Movimenta câmera para FRENTE
+            displacement += (camera_view_vector / norm(camera_view_vector)) * speed * delta_t;
+        }
+
+        if (tecla_A_pressionada)
+        {
+            // Movimenta câmera para ESQUERDA
+            displacement -= -(crossproduct(camera_up_vector, camera_view_vector / norm(camera_view_vector)) / norm(crossproduct(camera_up_vector, (camera_view_vector / norm(camera_view_vector))))) * speed * delta_t;
+        }
+
+        if (tecla_S_pressionada)
+        {
+            // Movimenta câmera para TRÁS
+            displacement -= (camera_view_vector / norm(camera_view_vector)) * speed * delta_t;
+        }
+
+        if (tecla_D_pressionada)
+        {
+            // Movimenta câmera para DIREITA
+            displacement += -(crossproduct(camera_up_vector, camera_view_vector / norm(camera_view_vector)) / norm(crossproduct(camera_up_vector, (camera_view_vector / norm(camera_view_vector))))) * speed * delta_t;
+        }
+
+        // Recalcula posição da nave com base no deslocamento calculado
+        spaceship_position = glm::vec4(displacement.x, displacement.y, displacement.z, 1.0f);
+
+        // Calcula a distância necessária da câmera para incluir todo o objeto no campo de visão
+        float distance_to_object = std::max(spaceship_width, std::max(spaceship_height, spaceship_depth)) / (2.0f * std::tan(field_of_view / 2.0f));
+
         // Computamos a posição da câmera utilizando coordenadas esféricas.  As
         // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
         // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
         // e ScrollCallback().
-        float r = g_CameraDistance;
+        float r = distance_to_object;
+        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
         float y = r*sin(g_CameraPhi);
         float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
 
-        // Abaixo definimos as varáveis que efetivamente definem a câmera virtual.
-        // Veja slides 195-227 e 229-234 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
-        glm::vec4 camera_position_c  = glm::vec4(x,y,z,1.0f); // Ponto "c", centro da câmera
-        glm::vec4 camera_lookat_l    = glm::vec4(0.0f,0.0f,0.0f,1.0f); // Ponto "l", para onde a câmera (look-at) estará sempre olhando
-        glm::vec4 camera_view_vector = camera_lookat_l - camera_position_c; // Vetor "view", sentido para onde a câmera está virada
-        glm::vec4 camera_up_vector   = glm::vec4(0.0f,1.0f,0.0f,0.0f); // Vetor "up" fixado para apontar para o "céu" (eito Y global)
+        // Recalcula a posição da câmera conforme a posição da nave
+        camera_position_c = glm::vec4(spaceship_position.x + x, spaceship_position.y + y, spaceship_position.z + z, 1.0f);
+        camera_view_vector = spaceship_position - camera_position_c;
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
@@ -378,7 +431,7 @@ int main(int argc, char* argv[])
         // Note que, no sistema de coordenadas da câmera, os planos near e far
         // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
         float nearplane = -0.1f;  // Posição do "near plane"
-        float farplane  = -10.0f; // Posição do "far plane"
+        float farplane  = -100.0f; // Posição do "far plane"
 
         if (g_UsePerspectiveProjection)
         {
@@ -413,21 +466,13 @@ int main(int argc, char* argv[])
         #define BUNNY  1
         #define PLANE  2
 
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-1.0f,0.0f,0.0f)
-              * Matrix_Rotate_Z(0.6f)
-              * Matrix_Rotate_X(0.2f)
-              * Matrix_Rotate_Y(g_AngleY + (float)glfwGetTime() * 0.1f);
+        // Desenhamos o modelo da nave
+        model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
+                * Matrix_Scale(0.5f, 0.5f, 0.5f)
+                * Matrix_Rotate_Y(135);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPHERE);
-        DrawVirtualObject("the_sphere");
-
-        // Desenhamos o modelo do coelho
-        model = Matrix_Translate(1.0f,0.0f,0.0f)
-              * Matrix_Rotate_X(g_AngleX + (float)glfwGetTime() * 0.1f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
-        DrawVirtualObject("the_bunny");
+        DrawVirtualObject("Cube");
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f);
@@ -1221,6 +1266,60 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         LoadShadersFromFiles();
         fprintf(stdout,"Shaders recarregados!\n");
         fflush(stdout);
+    }
+
+    // Abaixo se encontra o código da tarefa 4 do laboratório
+    //   Se apertar tecla W então vai pra fre
+    //   Se apertar tecla A então
+    //   Se apertar tecla S então
+    //   Se apertar tecla D então
+
+    if (key == GLFW_KEY_W)
+    {
+        if (action == GLFW_PRESS)
+        {
+            tecla_W_pressionada = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            tecla_W_pressionada = false;
+        }
+    }
+
+    if (key == GLFW_KEY_A)
+    {
+        if (action == GLFW_PRESS)
+        {
+            tecla_A_pressionada = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            tecla_A_pressionada = false;
+        }
+    }
+
+    if (key == GLFW_KEY_S)
+    {
+        if (action == GLFW_PRESS)
+        {
+            tecla_S_pressionada = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            tecla_S_pressionada = false;
+        }
+    }
+
+    if (key == GLFW_KEY_D)
+    {
+        if (action == GLFW_PRESS)
+        {
+            tecla_D_pressionada = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            tecla_D_pressionada = false;
+        }
     }
 }
 
