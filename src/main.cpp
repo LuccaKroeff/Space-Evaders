@@ -308,9 +308,14 @@ int main(int argc, char* argv[])
     LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
-    ObjModel spheremodel("../../data/DroidFighter.obj");
-    ComputeNormals(&spheremodel);
-    BuildTrianglesAndAddToVirtualScene(&spheremodel);
+    ObjModel spaceshipmodel("../../data/DroidFighter.obj");
+    ComputeNormals(&spaceshipmodel);
+    BuildTrianglesAndAddToVirtualScene(&spaceshipmodel);
+
+    // Construímos a representação de objetos geométricos através de malhas de triângulos
+    ObjModel asteroidmodel("../../data/A2.obj");
+    ComputeNormals(&asteroidmodel);
+    BuildTrianglesAndAddToVirtualScene(&asteroidmodel);
 
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
@@ -471,8 +476,29 @@ int main(int argc, char* argv[])
                 * Matrix_Scale(0.5f, 0.5f, 0.5f)
                 * Matrix_Rotate_Y(135);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
+        glUniform1i(g_object_id_uniform, BUNNY);
         DrawVirtualObject("Cube");
+        float valor_y_cima = 3.7f;
+        float valor_y_baixo = 0.7f;
+        int valor_x = 0;
+
+        for(int i=1; i < 6; i++) {
+            if((i % 2) == 0) {
+                valor_x += 1;
+                model = Matrix_Translate((valor_x * 0.7f), valor_y_cima,(- i -3.5f))
+                    * Matrix_Scale(0.5f, 0.5f, 0.5f);
+            }
+            else {
+                valor_x -= 1;
+                model = Matrix_Translate((valor_x * 0.7f), valor_y_baixo,(- i -3.5f))
+                    * Matrix_Scale(0.5f, 0.5f, 0.5f);
+            }
+            glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, SPHERE);
+            DrawVirtualObject("Group57342");
+            valor_x = -valor_x;
+        }
+
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.1f,0.0f);
