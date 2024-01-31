@@ -99,9 +99,9 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
+        // Cálculo de Lambert não importa para o céu, já que ele está sempre iluminado
         vec3 Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
-        float lambert = max(0,dot(n,l));
-        color.rgb = Kd0 * (lambert + 0.01);
+        color.rgb = Kd0;
 
     }
 

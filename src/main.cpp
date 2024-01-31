@@ -208,6 +208,7 @@ float g_TorsoPositionY = 0.0f;
 
 // Variável que controla o tipo de projeção utilizada: perspectiva ou ortográfica.
 bool g_UsePerspectiveProjection = true;
+bool g_UseFirstPersonView = false;
 
 // Variável que controla se o texto informativo será mostrado na tela.
 bool g_ShowInfoText = true;
@@ -413,18 +414,26 @@ int main(int argc, char* argv[])
         // Calcula a distância necessária da câmera para incluir todo o objeto no campo de visão
         float distance_to_object = std::max(spaceship_width, std::max(spaceship_height, spaceship_depth)) / (2.0f * std::tan(field_of_view / 2.0f));
 
-        // Computamos a posição da câmera utilizando coordenadas esféricas.  As
-        // variáveis g_CameraDistance, g_CameraPhi, e g_CameraTheta são
-        // controladas pelo mouse do usuário. Veja as funções CursorPosCallback()
-        // e ScrollCallback().
-        float r = distance_to_object;
-        float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
-        float y = r*sin(g_CameraPhi);
-        float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
+        // 1a pessoa (câmera livre)
+        if(g_UseFirstPersonView){
+            float y = -(sin(g_CameraPhi));
+            float z = cos(g_CameraPhi) * cos(g_CameraTheta);
+            float x = cos(g_CameraPhi) * sin(g_CameraTheta);
 
-        // Recalcula a posição da câmera conforme a posição da nave
-        camera_position_c = glm::vec4(spaceship_position.x + x, spaceship_position.y + y, spaceship_position.z + z, 1.0f);
-        camera_view_vector = spaceship_position - camera_position_c;
+            camera_position_c = glm::vec4(displacement.x, displacement.y, displacement.z - 0.5f, 1.0f);
+            camera_view_vector = glm::vec4(-x, y, -z, 0.0f);
+        }
+        // 3a pessoa (câmera look-at na direção da nave)
+        else{
+            float r = distance_to_object;
+            float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
+            float y = r*sin(g_CameraPhi);
+            float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
+
+            // Recalcula a posição da câmera conforme a posição da nave
+            camera_position_c = glm::vec4(spaceship_position.x + x, spaceship_position.y + y, spaceship_position.z + z, 1.0f);
+            camera_view_vector = spaceship_position - camera_position_c;
+        }
 
         // Computamos a matriz "View" utilizando os parâmetros da câmera para
         // definir o sistema de coordenadas da câmera.  Veja slides 2-14, 184-190 e 236-242 do documento Aula_08_Sistemas_de_Coordenadas.pdf.
@@ -438,26 +447,9 @@ int main(int argc, char* argv[])
         float nearplane = -0.1f;  // Posição do "near plane"
         float farplane  = -500.0f; // Posição do "far plane"
 
-        if (g_UsePerspectiveProjection)
-        {
-            // Projeção Perspectiva.
-            // Para definição do field of view (FOV), veja slides 205-215 do documento Aula_09_Projecoes.pdf.
-            float field_of_view = 3.141592 / 3.0f;
-            projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
-        }
-        else
-        {
-            // Projeção Ortográfica.
-            // Para definição dos valores l, r, b, t ("left", "right", "bottom", "top"),
-            // PARA PROJEÇÃO ORTOGRÁFICA veja slides 219-224 do documento Aula_09_Projecoes.pdf.
-            // Para simular um "zoom" ortográfico, computamos o valor de "t"
-            // utilizando a variável g_CameraDistance.
-            float t = 1.5f*g_CameraDistance/2.5f;
-            float b = -t;
-            float r = t*g_ScreenRatio;
-            float l = -r;
-            projection = Matrix_Orthographic(l, r, b, t, nearplane, farplane);
-        }
+        // Projeção Perspectiva.
+        float field_of_view = 3.141592 / 3.0f;
+        projection = Matrix_Perspective(field_of_view, g_ScreenRatio, nearplane, farplane);
 
         glm::mat4 model = Matrix_Identity(); // Transformação identidade de modelagem
 
@@ -1244,7 +1236,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
     //   Se apertar tecla Z       então g_AngleZ += delta;
     //   Se apertar tecla shift+Z então g_AngleZ -= delta;
 
-    float delta = 3.141592 / 16; // 22.5 graus, em radianos.
+    float delta = 3.141592 / 8; // 45.0 graus, em radianos.
 
     if (key == GLFW_KEY_X && action == GLFW_PRESS)
     {
@@ -1270,6 +1262,11 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mod)
         g_ForearmAngleZ = 0.0f;
         g_TorsoPositionX = 0.0f;
         g_TorsoPositionY = 0.0f;
+    }
+
+    if (key == GLFW_KEY_V && action == GLFW_PRESS)
+    {
+        g_UseFirstPersonView = !g_UseFirstPersonView;
     }
 
     // Se o usuário apertar a tecla P, utilizamos projeção perspectiva.
