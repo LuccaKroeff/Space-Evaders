@@ -304,8 +304,8 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
 
     // Carregamos duas imagens para serem utilizadas como textura
-    LoadTextureImage("../../data/DiffuseTexture.png");      // TextureImage0
-    LoadTextureImage("../../data/tc-earth_nightmap_citylights.gif"); // TextureImage1
+    LoadTextureImage("../../data/DiffuseTexture.png");  // TextureImage0
+    LoadTextureImage("../../data/space_3.jpg");         // TextureImage1
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spaceshipmodel("../../data/DroidFighter.obj");
@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    float speed = 0.5f; // Velocidade da câmera
+    float speed = 2.0f; // Velocidade da câmera
     float prev_time = (float)glfwGetTime();
     float delta_t;
 
@@ -436,7 +436,7 @@ int main(int argc, char* argv[])
         // Note que, no sistema de coordenadas da câmera, os planos near e far
         // estão no sentido negativo! Veja slides 176-204 do documento Aula_09_Projecoes.pdf.
         float nearplane = -0.1f;  // Posição do "near plane"
-        float farplane  = -100.0f; // Posição do "far plane"
+        float farplane  = -500.0f; // Posição do "far plane"
 
         if (g_UsePerspectiveProjection)
         {
@@ -467,8 +467,8 @@ int main(int argc, char* argv[])
         glUniformMatrix4fv(g_view_uniform       , 1 , GL_FALSE , glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform , 1 , GL_FALSE , glm::value_ptr(projection));
 
-        #define SPHERE 0
-        #define BUNNY  1
+        #define ASTEROID 0
+        #define SPACESHIP  1
         #define PLANE  2
 
         // Desenhamos o modelo da nave
@@ -476,7 +476,7 @@ int main(int argc, char* argv[])
                 * Matrix_Scale(0.5f, 0.5f, 0.5f)
                 * Matrix_Rotate_Y(135);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
+        glUniform1i(g_object_id_uniform, SPACESHIP);
         DrawVirtualObject("Cube");
         float valor_y_cima = 3.7f;
         float valor_y_baixo = 0.7f;
@@ -494,16 +494,20 @@ int main(int argc, char* argv[])
                     * Matrix_Scale(0.5f, 0.5f, 0.5f);
             }
             glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-            glUniform1i(g_object_id_uniform, SPHERE);
+            glUniform1i(g_object_id_uniform, ASTEROID);
             DrawVirtualObject("Group57342");
             valor_x = -valor_x;
         }
 
-
-        // Desenhamos o plano do chão
-        model = Matrix_Translate(0.0f,-1.1f,0.0f);
+        // Desenhamos o ambiente
+        model = Matrix_Translate(0.0f, -200.0f, 0.0f)
+                * Matrix_Scale(250.0f, 250.0f, 250.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, PLANE);
+        DrawVirtualObject("the_plane");
+
+        model = Matrix_Translate(0.0f, 250.0f, 0.0f) * Matrix_Rotate_X(-glm::radians(90.0f)) * Matrix_Scale(250.0f, 250.0f, 250.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         DrawVirtualObject("the_plane");
 
         // Imprimimos na tela os ângulos de Euler que controlam a rotação do
