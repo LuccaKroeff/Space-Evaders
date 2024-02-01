@@ -397,24 +397,20 @@ int main(int argc, char* argv[])
         // Calcula a distância necessária da câmera para incluir todo o objeto no campo de visão
         float distance_to_object = std::max(spaceship_width, std::max(spaceship_height, spaceship_depth)) / (2.0f * std::tan(field_of_view / 2.0f));
 
+        float y = -(sin(g_CameraPhi));
+        float z = cos(g_CameraPhi) * cos(g_CameraTheta);
+        float x = cos(g_CameraPhi) * sin(g_CameraTheta);
+        printf("%f\n", x);
+
         // 1a pessoa (câmera livre)
         if(g_UseFirstPersonView){
-            float y = -(sin(g_CameraPhi));
-            float z = cos(g_CameraPhi) * cos(g_CameraTheta);
-            float x = cos(g_CameraPhi) * sin(g_CameraTheta);
-
             camera_position_c = glm::vec4(displacement.x, displacement.y, displacement.z - 0.5f, 1.0f);
             camera_view_vector = glm::vec4(-x, y, -z, 0.0f);
         }
         // 3a pessoa (câmera look-at na direção da nave)
         else{
-            float r = distance_to_object;
-            float x = r*cos(g_CameraPhi)*sin(g_CameraTheta);
-            float y = r*sin(g_CameraPhi);
-            float z = r*cos(g_CameraPhi)*cos(g_CameraTheta);
-
             // Recalcula a posição da câmera conforme a posição da nave
-            camera_position_c = glm::vec4(spaceship_position.x + x, spaceship_position.y + y, spaceship_position.z + z, 1.0f);
+            camera_position_c = glm::vec4(spaceship_position.x + x*distance_to_object, spaceship_position.y + -y*distance_to_object, spaceship_position.z + z*distance_to_object, 1.0f);
             camera_view_vector = spaceship_position - camera_position_c;
         }
 
@@ -448,9 +444,11 @@ int main(int argc, char* argv[])
 
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
-                * Matrix_Scale(0.5f, 0.5f, 0.5f)
-                * Matrix_Rotate_Y(135)
-                * Matrix_Rotate_Z( g_AngleZ * 0.1f );
+        * Matrix_Scale(0.5f, 0.5f, 0.5f)
+        * Matrix_Rotate_Y(135)
+        * Matrix_Rotate_X(-y)
+        * Matrix_Rotate_Y(x)
+        * Matrix_Rotate_Z(g_AngleZ * 0.1f);
 
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPACESHIP);
@@ -483,7 +481,9 @@ int main(int argc, char* argv[])
         glUniform1i(g_object_id_uniform, PLANE);
         DrawVirtualObject("the_plane");
 
-        model = Matrix_Translate(0.0f, 250.0f, 0.0f) * Matrix_Rotate_X(-glm::radians(90.0f)) * Matrix_Scale(250.0f, 250.0f, 250.0f);
+        model = Matrix_Translate(0.0f, 250.0f, 0.0f)
+                * Matrix_Rotate_X(-glm::radians(90.0f))
+                * Matrix_Scale(250.0f, 250.0f, 250.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         DrawVirtualObject("the_plane");
 
@@ -596,24 +596,6 @@ void DrawVirtualObject(const char* object_name)
 //
 void LoadShadersFromFiles()
 {
-    // Note que o caminho para os arquivos "shader_vertex.glsl" e
-    // "shader_fragment.glsl" estão fixados, sendo que assumimos a existência
-    // da seguinte estrutura no sistema de arquivos:
-    //
-    //    + FCG_Lab_01/
-    //    |
-    //    +--+ bin/
-    //    |  |
-    //    |  +--+ Release/  (ou Debug/ ou Linux/)
-    //    |     |
-    //    |     o-- main.exe
-    //    |
-    //    +--+ src/
-    //       |
-    //       o-- shader_vertex.glsl
-    //       |
-    //       o-- shader_fragment.glsl
-    //
     GLuint vertex_shader_id = LoadShader_Vertex("../../src/shader_vertex.glsl");
     GLuint fragment_shader_id = LoadShader_Fragment("../../src/shader_fragment.glsl");
 
@@ -774,11 +756,6 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel* model)
                 bbox_max.y = std::max(bbox_max.y, vy);
                 bbox_max.z = std::max(bbox_max.z, vz);
 
-                // Inspecionando o código da tinyobjloader, o aluno Bernardo
-                // Sulzbach (2017/1) apontou que a maneira correta de testar se
-                // existem normais e coordenadas de textura no ObjModel é
-                // comparando se o índice retornado é -1. Fazemos isso abaixo.
-
                 if ( idx.normal_index != -1 )
                 {
                     const float nx = model->attrib.normals[3*idx.normal_index + 0];
@@ -861,11 +838,6 @@ void BuildTrianglesAndAddToVirtualScene(ObjModel* model)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indices_id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), NULL, GL_STATIC_DRAW);
     glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, indices.size() * sizeof(GLuint), indices.data());
-    // glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // XXX Errado!
-    //
-
-    // "Desligamos" o VAO, evitando assim que operações posteriores venham a
-    // alterar o mesmo. Isso evita bugs.
     glBindVertexArray(0);
 }
 
@@ -1132,7 +1104,6 @@ void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
         g_LastCursorPosX = xpos;
         g_LastCursorPosY = ypos;
     }
-
 }
 
 // Função callback chamada sempre que o usuário movimenta a "rodinha" do mouse.
