@@ -340,14 +340,6 @@ int main(int argc, char* argv[])
     glm::vec4 spaceship_position = glm::vec4(camera_position_c.x, camera_position_c.y - 0.5f, camera_position_c.z + 3.0f, 1.0f);
     glm::vec4 displacement = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);         // Vetor que define o deslocamento da nave em relação ao início
 
-    // Definindo dimensões da nave
-    float spaceship_width = 4.0f;
-    float spaceship_height = 2.0;
-    float spaceship_depth = 1.5;
-
-    // Definindo field of view
-    float field_of_view = 3.141592 / 3.0f;
-
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
@@ -395,12 +387,11 @@ int main(int argc, char* argv[])
         spaceship_position = glm::vec4(displacement.x, displacement.y, displacement.z, 1.0f);
 
         // Calcula a distância necessária da câmera para incluir todo o objeto no campo de visão
-        float distance_to_object = std::max(spaceship_width, std::max(spaceship_height, spaceship_depth)) / (2.0f * std::tan(field_of_view / 2.0f));
+        float distance_to_object = 3.5f;
 
         float y = -(sin(g_CameraPhi));
         float z = cos(g_CameraPhi) * cos(g_CameraTheta);
         float x = cos(g_CameraPhi) * sin(g_CameraTheta);
-        printf("%f\n", x);
 
         // 1a pessoa (câmera livre)
         if(g_UseFirstPersonView){
@@ -444,11 +435,10 @@ int main(int argc, char* argv[])
 
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
-        * Matrix_Scale(0.5f, 0.5f, 0.5f)
-        * Matrix_Rotate_Y(135)
-        * Matrix_Rotate_X(-y)
-        * Matrix_Rotate_Y(x)
-        * Matrix_Rotate_Z(g_AngleZ * 0.1f);
+                * Matrix_Scale(0.5f, 0.5f, 0.5f)
+                * Matrix_Rotate_Y(135)
+                * Matrix_Rotate_Y(g_CameraTheta)
+                * Matrix_Rotate_Z(g_AngleZ * 0.1f);
 
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPACESHIP);
@@ -1073,12 +1063,6 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 // cima da janela OpenGL.
 void CursorPosCallback(GLFWwindow* window, double xpos, double ypos)
 {
-    // Abaixo executamos o seguinte: caso o botão esquerdo do mouse esteja
-    // pressionado, computamos quanto que o mouse se movimento desde o último
-    // instante de tempo, e usamos esta movimentação para atualizar os
-    // parâmetros que definem a posição da câmera dentro da cena virtual.
-    // Assim, temos que o usuário consegue controlar a câmera.
-
     if (g_LeftMouseButtonPressed)
     {
         // Deslocamento do cursor do mouse em x e y de coordenadas de tela!
