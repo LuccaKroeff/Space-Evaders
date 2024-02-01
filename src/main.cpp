@@ -298,11 +298,16 @@ int main(int argc, char* argv[])
     // Carregamos duas imagens para serem utilizadas como textura
     LoadTextureImage("../../data/DiffuseTexture.png");  // TextureImage0
     LoadTextureImage("../../data/space_3.jpg");         // TextureImage1
+    LoadTextureImage("../../data/meteoro.png");         // TextureImage2
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spaceshipmodel("../../data/DroidFighter.obj");
     ComputeNormals(&spaceshipmodel);
     BuildTrianglesAndAddToVirtualScene(&spaceshipmodel);
+
+    ObjModel spheremodel("../../data/sphere.obj");
+    ComputeNormals(&spheremodel);
+    BuildTrianglesAndAddToVirtualScene(&spheremodel);
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel asteroidmodel("../../data/A2.obj");
@@ -431,7 +436,7 @@ int main(int argc, char* argv[])
 
         #define ASTEROID 0
         #define SPACESHIP  1
-        #define PLANE  2
+        #define SPHERE 2
 
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
@@ -464,18 +469,14 @@ int main(int argc, char* argv[])
             valor_x = -valor_x;
         }
 
-        // Desenhamos o ambiente
-        model = Matrix_Translate(0.0f, -200.0f, 0.0f)
-                * Matrix_Scale(250.0f, 250.0f, 250.0f);
+        glCullFace(GL_FRONT);
+        // Desenhamos o modelo da esfera
+        model = Matrix_Translate(-10.0f,-10.0f,1.0f)
+              * Matrix_Scale(500.0f, 500.0f, 500.0f);
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, PLANE);
-        DrawVirtualObject("the_plane");
-
-        model = Matrix_Translate(0.0f, 250.0f, 0.0f)
-                * Matrix_Rotate_X(-glm::radians(90.0f))
-                * Matrix_Scale(250.0f, 250.0f, 250.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        DrawVirtualObject("the_plane");
+        glUniform1i(g_object_id_uniform, SPHERE);
+        DrawVirtualObject("the_sphere");
+        glCullFace(GL_BACK);
 
         // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
         TextRendering_ShowProjection(window);

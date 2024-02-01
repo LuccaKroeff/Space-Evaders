@@ -21,7 +21,8 @@ uniform mat4 projection;
 // Identificador que define qual objeto está sendo desenhado no momento
 #define ASTEROID 0
 #define SPACESHIP  1
-#define PLANE  2
+#define SPHERE 2
+
 uniform int object_id;
 
 // Parâmetros da axis-aligned bounding box (AABB) do modelo
@@ -70,19 +71,34 @@ void main()
 
     if ( object_id == ASTEROID )
     {
-        vec4 bbox_center = (bbox_min + bbox_max) / 2.0;
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
 
-        vec3 to_sphere_center = position_model.xyz - bbox_center.xyz;
-
-        float theta = atan(to_sphere_center.x, to_sphere_center.z);
-        float phi = asin(to_sphere_center.y / length(to_sphere_center));
-
-        U = (theta + M_PI) / (2.0 * M_PI);
-        V = (phi + 0.5 * M_PI) / M_PI;
-
-        vec3 Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
+        vec3 Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
         float lambert = max(0,dot(n,l));
         color.rgb = Kd0 * (lambert + 0.01);
+    }
+    else if ( object_id == SPHERE )
+    {
+
+        vec4 bbox_center = (bbox_min + bbox_max) / 2.0;
+
+        vec4 p_linha = bbox_center + (normalize(position_model - bbox_center));
+
+        vec4 p_vetor = p_linha - bbox_center;
+
+        float px = p_vetor.x;
+        float py = p_vetor.y;
+        float pz = p_vetor.z;
+
+        U = (atan(px, pz) + M_PI)/(2*M_PI);
+        V = ((asin(py/length(p_vetor)) + (M_PI_2))/M_PI);
+
+        // Cálculo de Lambert não importa para o céu, já que ele está sempre iluminado
+        vec3 Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
+        color.rgb = Kd0;
+
     }
     else if ( object_id == SPACESHIP )
     {
@@ -93,16 +109,6 @@ void main()
         vec3 Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
         float lambert = max(0,dot(n,l));
         color.rgb = Kd0 * (lambert + 0.01);
-    }
-    else if ( object_id == PLANE )
-    {
-        U = texcoords.x;
-        V = texcoords.y;
-
-        // Cálculo de Lambert não importa para o céu, já que ele está sempre iluminado
-        vec3 Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
-        color.rgb = Kd0;
-
     }
 
     color.a = 1;
