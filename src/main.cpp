@@ -296,12 +296,13 @@ int main(int argc, char* argv[])
     LoadShadersFromFiles();
 
     // Carregamos duas imagens para serem utilizadas como textura
-    LoadTextureImage("../../data/DiffuseTexture.png");  // TextureImage0
-    LoadTextureImage("../../data/space_3.jpg");         // TextureImage1
+    LoadTextureImage("../../data/spaceship.png");  // TextureImage0
+    LoadTextureImage("../../data/space.jpg");           // TextureImage1
     LoadTextureImage("../../data/meteoro.png");         // TextureImage2
+    LoadTextureImage("../../data/gold_2.jpg");            // TextureImage3
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
-    ObjModel spaceshipmodel("../../data/DroidFighter.obj");
+    ObjModel spaceshipmodel("../../data/spaceship.obj");
     ComputeNormals(&spaceshipmodel);
     BuildTrianglesAndAddToVirtualScene(&spaceshipmodel);
 
@@ -310,13 +311,17 @@ int main(int argc, char* argv[])
     BuildTrianglesAndAddToVirtualScene(&spheremodel);
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
-    ObjModel asteroidmodel("../../data/A2.obj");
+    ObjModel asteroidmodel("../../data/asteroid.obj");
     ComputeNormals(&asteroidmodel);
     BuildTrianglesAndAddToVirtualScene(&asteroidmodel);
 
     ObjModel planemodel("../../data/plane.obj");
     ComputeNormals(&planemodel);
     BuildTrianglesAndAddToVirtualScene(&planemodel);
+
+    ObjModel coinmodel("../../data/coin.obj");
+    ComputeNormals(&coinmodel);
+    BuildTrianglesAndAddToVirtualScene(&coinmodel);
 
     if ( argc > 1 )
     {
@@ -339,7 +344,7 @@ int main(int argc, char* argv[])
     float prev_time = (float)glfwGetTime();
     float delta_t;
 
-    glm::vec4 camera_position_c = glm::vec4(0.0f, 0.40f, -4.3f, 1.0f);  // Ponto "c", centro da câmera
+    glm::vec4 camera_position_c = glm::vec4(0.0f, 0.0f, -4.3f, 1.0f);  // Ponto "c", centro da câmera
     glm::vec4 camera_view_vector = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);   // Vetor "view", sentido para onde a câmera está virada
     glm::vec4 camera_up_vector = glm::vec4(0.0f, 1.0f, 0.0f, 0.0f);     // Vetor "up" fixado para apontar para o "céu" (eito Y global)
     glm::vec4 spaceship_position = glm::vec4(camera_position_c.x, camera_position_c.y - 0.5f, camera_position_c.z + 3.0f, 1.0f);
@@ -394,9 +399,9 @@ int main(int argc, char* argv[])
         // Calcula a distância necessária da câmera para incluir todo o objeto no campo de visão
         float distance_to_object = 3.5f;
 
+        float x = cos(g_CameraPhi) * sin(g_CameraTheta);
         float y = -(sin(g_CameraPhi));
         float z = cos(g_CameraPhi) * cos(g_CameraTheta);
-        float x = cos(g_CameraPhi) * sin(g_CameraTheta);
 
         // 1a pessoa (câmera livre)
         if(g_UseFirstPersonView){
@@ -437,37 +442,32 @@ int main(int argc, char* argv[])
         #define ASTEROID 0
         #define SPACESHIP  1
         #define SPHERE 2
+        #define COIN 3
 
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
                 * Matrix_Scale(0.5f, 0.5f, 0.5f)
-                * Matrix_Rotate_Y(135)
-                * Matrix_Rotate_Y(g_CameraTheta)
+                * Matrix_Rotate_Y(3.1415 + g_CameraTheta)
+                * Matrix_Rotate_X(g_CameraPhi)
                 * Matrix_Rotate_Z(g_AngleZ * 0.1f);
 
         glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPACESHIP);
         DrawVirtualObject("Cube");
 
-        float valor_y_cima = 3.7f;
-        float valor_y_baixo = 0.7f;
-        int valor_x = 0;
-        for(int i=1; i < 6; i++) {
-            if((i % 2) == 0) {
-                valor_x += 1;
-                model = Matrix_Translate((valor_x * 0.7f), valor_y_cima,(- i -3.5f))
-                    * Matrix_Scale(0.5f, 0.5f, 0.5f);
-            }
-            else {
-                valor_x -= 1;
-                model = Matrix_Translate((valor_x * 0.7f), valor_y_baixo,(- i -3.5f))
-                    * Matrix_Scale(0.5f, 0.5f, 0.5f);
-            }
-            glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-            glUniform1i(g_object_id_uniform, ASTEROID);
-            DrawVirtualObject("Group57342");
-            valor_x = -valor_x;
-        }
+        // Desenhamos os modelos das moedas
+        model = Matrix_Translate(0.0f, -0.75f, -4.0f)
+                * Matrix_Scale(0.5f, 0.5f, 0.5f)
+                * Matrix_Rotate_Y((float)glfwGetTime() * 0.5f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, COIN);
+        DrawVirtualObject("Coin");
+
+        // Desenhamos os modelos de asteroides
+        model = Matrix_Translate(0.0f, -2.5f, -6.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, ASTEROID);
+        DrawVirtualObject("Asteroid");
 
         glCullFace(GL_FRONT);
         // Desenhamos o modelo da esfera
@@ -612,6 +612,7 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage0"), 0);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
     glUseProgram(0);
 }
 

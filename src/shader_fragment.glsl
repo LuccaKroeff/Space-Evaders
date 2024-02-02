@@ -22,6 +22,8 @@ uniform mat4 projection;
 #define ASTEROID 0
 #define SPACESHIP  1
 #define SPHERE 2
+#define COIN 3
+
 
 uniform int object_id;
 
@@ -33,6 +35,7 @@ uniform vec4 bbox_max;
 uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
+uniform sampler2D TextureImage3;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -109,6 +112,16 @@ void main()
         vec3 Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
         float lambert = max(0,dot(n,l));
         color.rgb = Kd0 * (lambert + 0.01);
+    }
+    else if ( object_id == COIN )
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec3 Kd0 = texture(TextureImage3, vec2(U,V)).rgb;
+        float lambert = max(0,dot(n,l));
+        color.rgb = Kd0 * (lambert + 0.02);
     }
 
     color.a = 1;
