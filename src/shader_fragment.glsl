@@ -60,14 +60,29 @@ void main()
     vec4 n = normalize(normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(1.0,1.0,0.0,0.0));
+    vec4 l = normalize(vec4(-3.0,3.0,3.0,0.0));
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
 
+    // termo h para Blinn-Phong
+    vec4 h = v + l;
+
     // Coordenadas de textura U e V
     float U = 0.0;
     float V = 0.0;
+
+    // Espectro da fonte de iluminação
+    vec3 I = vec3(1.0,1.0,1.0); // espectro da fonte de luz
+
+    // Espectro da luz ambiente
+    vec3 Ia = vec3(0.2,0.2,0.2); // espectro da luz ambiente
+
+     // Parâmetros que definem as propriedades espectrais da superfície
+    vec3 Kd; // Refletância difusa
+    vec3 Ks; // Refletância especular
+    vec3 Ka; // Refletância ambiente
+    float q; // Expoente especular para o modelo de iluminação de Blinn-Phong
 
     if ( object_id == ASTEROID )
     {
@@ -77,7 +92,7 @@ void main()
 
         vec3 Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
         float lambert = max(0,dot(n,l));
-        color.rgb = Kd0 * (lambert + 0.01);
+        color.rgb = Kd0 * I * (lambert + 0.01);
     }
     else if ( object_id == SPHERE )
     {
@@ -106,9 +121,17 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
+        Kd = vec3(0.2f,0.3f,1.0f);
+        Ka = vec3(0.2f,0.3f,1.0f);
+        Ks = vec3(1.0,1.0f,1.0f);
+
+        vec3 ambient_term = Ka * Ia;
+        vec3 BlinnPhong_term = Ks * I * pow(dot(n,h),q);
+
         vec3 Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
         float lambert = max(0,dot(n,l));
-        color.rgb = Kd0 * (lambert + 0.01);
+
+        color.rgb = Kd0 * (((Kd * I * lambert) + ambient_term + BlinnPhong_term) + 0.01);
     }
 
     color.a = 1;
