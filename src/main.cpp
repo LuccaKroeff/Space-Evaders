@@ -106,6 +106,9 @@ struct ObjModel
     }
 };
 
+// Desenha os modelos das moedas e asteroides
+void LoadCoins();
+void LoadAsteroids();
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -456,18 +459,11 @@ int main(int argc, char* argv[])
         DrawVirtualObject("Cube");
 
         // Desenhamos os modelos das moedas
-        model = Matrix_Translate(0.0f, -0.75f, -4.0f)
-                * Matrix_Scale(0.5f, 0.5f, 0.5f)
-                * Matrix_Rotate_Y((float)glfwGetTime() * 0.5f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, COIN);
-        DrawVirtualObject("Coin");
+        LoadCoins();
 
-        // Desenhamos os modelos de asteroides
-        model = Matrix_Translate(0.0f, -2.5f, -6.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, ASTEROID);
-        DrawVirtualObject("Asteroid");
+        // Desenhamos os modelos dos asteroides
+        LoadAsteroids();
+
 
         glCullFace(GL_FRONT);
         // Desenhamos o modelo da esfera
@@ -580,6 +576,78 @@ void DrawVirtualObject(const char* object_name)
     // "Desligamos" o VAO, evitando assim que operações posteriores venham a
     // alterar o mesmo. Isso evita bugs.
     glBindVertexArray(0);
+}
+
+void LoadAsteroids(){
+    glm::mat4 model = Matrix_Identity();
+
+    // Desenhamos os modelos de asteroides
+    model = Matrix_Translate(0.0f, -2.5f, -6.0f)
+            * Matrix_Rotate_X(1.5)
+            * Matrix_Scale(1.35, 0.6, 1.2);
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, ASTEROID);
+    DrawVirtualObject("Asteroid");
+
+    model = Matrix_Translate(6.0f, -1.5f, -14.5f)
+            * Matrix_Rotate_Y(0.7)
+            * Matrix_Scale(1.75, 1.5, 1.0);
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, ASTEROID);
+    DrawVirtualObject("Asteroid");
+
+    model = Matrix_Translate(1.0f, -0.5f, -10.5f)
+            * Matrix_Rotate_Z(4.0);
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, ASTEROID);
+    DrawVirtualObject("Asteroid");
+
+    model = Matrix_Translate(0.5f, 2.5f, -10.0f)
+            * Matrix_Rotate_X(3.0)
+            * Matrix_Scale(1.0, 0.9, 1.45);
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, ASTEROID);
+    DrawVirtualObject("Asteroid");
+
+    model = Matrix_Translate(-2.5f, 1.0f, -7.5f)
+            * Matrix_Rotate_Y(2.0)
+            * Matrix_Scale(0.6, 1.2, 1.25);
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, ASTEROID);
+    DrawVirtualObject("Asteroid");
+
+    model = Matrix_Translate(-3.5f, -1.5f, -13.5f)
+            * Matrix_Rotate_Z(1.0)
+            * Matrix_Scale(0.95, 1.0, 1.4);
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, ASTEROID);
+    DrawVirtualObject("Asteroid");
+}
+
+void LoadCoins(){
+    glm::mat4 model = Matrix_Identity();
+
+    // Desenhamos os modelos das moedas
+    model = Matrix_Translate(0.0f, -1.75f, -7.5f)
+            * Matrix_Scale(0.5f, 0.5f, 0.5f)
+            * Matrix_Rotate_Y((float)glfwGetTime());
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, COIN);
+    DrawVirtualObject("Coin");
+
+    model = Matrix_Translate(0.0f, 0.0f, -14.5f)
+            * Matrix_Scale(0.5f, 0.5f, 0.5f)
+            * Matrix_Rotate_Y((float)glfwGetTime());
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, COIN);
+    DrawVirtualObject("Coin");
+
+    model = Matrix_Translate(3.0f, -4.0f, -18.5f)
+            * Matrix_Scale(0.5f, 0.5f, 0.5f)
+            * Matrix_Rotate_Y((float)glfwGetTime());
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, COIN);
+    DrawVirtualObject("Coin");
 }
 
 // Função que carrega os shaders de vértices e de fragmentos que serão
