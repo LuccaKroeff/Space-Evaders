@@ -3,18 +3,20 @@
 
 #include <glm/glm.hpp>
 
-struct Hitbox
+struct HitBox
 {
     glm::vec3 minPoint;
     glm::vec3 maxPoint;
 };
 
-bool SpaceshipAsteroidCollision(){
+struct HitSphere
+{
+    glm::vec3 center;
+    float radius;
+};
 
-}
-
-bool SpaceshipCoinCollision(){
-
-}
+bool SpaceshipAsteroidCollision(HitBox SpaceshipHitBox, HitBox AsteroidHitBox);
+bool SpaceshipCoinCollision(HitBox SpaceshipHitBox, HitBox CoinHitBox);
+bool SpaceshipUniverseCollision(HitBox SpaceshipHitBox, HitSphere UniverseHitSphere);
 
 #endif

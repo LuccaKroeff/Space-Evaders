@@ -48,6 +48,9 @@
 #include "utils.h"
 #include "matrices.h"
 
+// Header para sistema de colisões
+#include "collisions.h"
+
 // Estrutura que representa um modelo geométrico carregado a partir de um
 // arquivo ".obj". Veja https://en.wikipedia.org/wiki/Wavefront_.obj_file .
 struct ObjModel
@@ -477,6 +480,13 @@ int main(int argc, char* argv[])
 
         // Desenha asteroides em relação ao seu ponto atual na curva de Bezier
         LoadBezierAsteroids();
+
+        // Variáveis para utilizar no sistema de colisões
+        glm::vec3 SpaceshipDimensions = glm::vec3(4.0f, 4.0f, 4.0f);
+        glm::vec3 lowerBackLeft = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) - SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
+        glm::vec3 upperFrontRight = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) + SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
+
+        HitBox HitBoxSpaceship = { lowerBackLeft, upperFrontRight };
 
         // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
         TextRendering_ShowProjection(window);

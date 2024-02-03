@@ -1922,7 +1922,7 @@
 	<inttypes.h>
 	<stdint.h>
 
-1706910490 source:c:\users\i585963\desktop\fcg\spaceevaders\src\main.cpp
+1706971583 source:c:\users\i585963\desktop\fcg\spaceevaders\src\main.cpp
 	<cmath>
 	<cstdio>
 	<cstdlib>
@@ -2846,10 +2846,78 @@
 1705963239 source:c:\users\i585963\desktop\fcg\spaceevaders\src\tiny_obj_loader.cpp
 	"tiny_obj_loader.h"
 
-1706905459 source:c:\users\i585963\desktop\fcg\spaceevaders\src\collisions.cpp
-	<iostream>
-	<fstream>
-	<sstream>
-	<vector>
+1706972852 source:c:\users\i585963\desktop\fcg\spaceevaders\src\collisions.cpp
+	"collisions.h"
+
+1706973099 c:\users\i585963\desktop\fcg\spaceevaders\include\collisions.h
+	<glm/glm.hpp>
+
+1705963242 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\glm.hpp
+	"detail/_fixes.hpp"
+	"detail/setup.hpp"
+	<cmath>
+	<climits>
+	<cfloat>
 	<limits>
+	<cassert>
+	"fwd.hpp"
+	"vec2.hpp"
+	"vec3.hpp"
+	"vec4.hpp"
+	"mat2x2.hpp"
+	"mat2x3.hpp"
+	"mat2x4.hpp"
+	"mat3x2.hpp"
+	"mat3x3.hpp"
+	"mat3x4.hpp"
+	"mat4x2.hpp"
+	"mat4x3.hpp"
+	"mat4x4.hpp"
+	"trigonometric.hpp"
+	"exponential.hpp"
+	"common.hpp"
+	"packing.hpp"
+	"geometric.hpp"
+	"matrix.hpp"
+	"vector_relational.hpp"
+	"integer.hpp"
+
+1705963241 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\fwd.hpp
+	"detail/qualifier.hpp"
+
+1705963242 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\packing.hpp
+	"./ext/vector_uint2.hpp"
+	"./ext/vector_float2.hpp"
+	"./ext/vector_float4.hpp"
+	"detail/func_packing.inl"
+
+1705963245 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\detail\func_packing.inl
+	"../common.hpp"
+	"type_half.hpp"
+	"func_packing_simd.inl"
+
+1705963245 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\detail\type_half.hpp
+	"setup.hpp"
+	"type_half.inl"
+
+1705963243 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\detail\type_half.inl
+
+1705963245 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\detail\func_packing_simd.inl
+
+1705963242 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\integer.hpp
+	"detail/qualifier.hpp"
+	"common.hpp"
+	"vector_relational.hpp"
+	"detail/func_integer.inl"
+
+1705963245 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\detail\func_integer.inl
+	"_vectorize.hpp"
+	<intrin.h>
+	<limits>
+	"func_integer_simd.inl"
+
+1705963244 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\detail\func_integer_simd.inl
+	"../simd/integer.h"
+
+1705963261 c:\users\i585963\desktop\fcg\spaceevaders\include\glm\simd\integer.h
 
