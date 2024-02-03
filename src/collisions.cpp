@@ -1,75 +1,53 @@
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-#include <limits>
+#include "collisions.h"
 
-struct Vertex {
-    float x, y, z;
-};
+bool SpaceshipAsteroidCollision(HitBox SpaceshipHitBox, HitBox AsteroidHitBox){
+    // Verifica a colisão entre duas caixas delimitadas (hit boxes)
+    if (SpaceshipHitBox.maxPoint.x < AsteroidHitBox.minPoint.x ||
+        SpaceshipHitBox.minPoint.x > AsteroidHitBox.maxPoint.x ||
+        SpaceshipHitBox.maxPoint.y < AsteroidHitBox.minPoint.y ||
+        SpaceshipHitBox.minPoint.y > AsteroidHitBox.maxPoint.y ||
+        SpaceshipHitBox.maxPoint.z < AsteroidHitBox.minPoint.z ||
+        SpaceshipHitBox.minPoint.z > AsteroidHitBox.maxPoint.z) {
 
-struct BoundingBox {
-    float minX, minY, minZ;
-    float maxX, maxY, maxZ;
-};
-
-// Função para calcular a bounding box de um objeto a partir de um arquivo .obj
-BoundingBox CalculateBoundingBox(const std::string& filePath) {
-    std::ifstream file(filePath);
-    std::string line;
-    std::vector<Vertex> vertices;
-
-    if (!file.is_open()) {
-        std::cerr << "Erro ao abrir o arquivo .obj." << std::endl;
-        // Retorna uma bounding box padrão ou trata o erro de outra maneira
-        return BoundingBox{0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f};
+        // Sem colisão
+        return false;
     }
 
-    // Loop para ler as coordenadas dos vértices do arquivo .obj
-    while (std::getline(file, line)) {
-        std::istringstream iss(line);
-        std::string type;
-        iss >> type;
-
-        if (type == "v") {
-            Vertex vertex;
-            iss >> vertex.x >> vertex.y >> vertex.z;
-            vertices.push_back(vertex);
-        }
-    }
-
-    // Inicializa os limites da bounding box com valores extremos
-    float minX = std::numeric_limits<float>::max();
-    float minY = std::numeric_limits<float>::max();
-    float minZ = std::numeric_limits<float>::max();
-    float maxX = std::numeric_limits<float>::lowest();
-    float maxY = std::numeric_limits<float>::lowest();
-    float maxZ = std::numeric_limits<float>::lowest();
-
-    // Encontra os valores mínimos e máximos em cada dimensão
-    for (const auto& vertex : vertices) {
-        minX = std::min(minX, vertex.x);
-        minY = std::min(minY, vertex.y);
-        minZ = std::min(minZ, vertex.z);
-        maxX = std::max(maxX, vertex.x);
-        maxY = std::max(maxY, vertex.y);
-        maxZ = std::max(maxZ, vertex.z);
-    }
-
-    return BoundingBox{minX, minY, minZ, maxX, maxY, maxZ};
+    // Se chegou aqui, há colisão
+    return true;
 }
 
-int DefineBoundingBox() {
-    // Substitua o caminho do arquivo pelo caminho real do seu arquivo .obj
-    std::string filePath = "caminho/do/seu/arquivo.obj";
+bool SpaceshipCoinCollision(HitBox SpaceshipHitBox, HitBox CoinHitBox){
+    // Verifica a colisão entre duas caixas delimitadas (hit boxes)
+    if (SpaceshipHitBox.maxPoint.x < CoinHitBox.minPoint.x ||
+        SpaceshipHitBox.minPoint.x > CoinHitBox.maxPoint.x ||
+        SpaceshipHitBox.maxPoint.y < CoinHitBox.minPoint.y ||
+        SpaceshipHitBox.minPoint.y > CoinHitBox.maxPoint.y ||
+        SpaceshipHitBox.maxPoint.z < CoinHitBox.minPoint.z ||
+        SpaceshipHitBox.minPoint.z > CoinHitBox.maxPoint.z) {
 
-    BoundingBox boundingBox = CalculateBoundingBox(filePath);
+        // Sem colisão
+        return false;
+    }
 
-    // Imprime os valores da bounding box
-    std::cout << "BoundingBox:" << std::endl;
-    std::cout << "MinX: " << boundingBox.minX << ", MaxX: " << boundingBox.maxX << std::endl;
-    std::cout << "MinY: " << boundingBox.minY << ", MaxY: " << boundingBox.maxY << std::endl;
-    std::cout << "MinZ: " << boundingBox.minZ << ", MaxZ: " << boundingBox.maxZ << std::endl;
+    // Se chegou aqui, há colisão
+    return true;
 
-    return 0;
+}
+
+bool SpaceshipUniverseCollision(HitBox SpaceshipHitBox, HitSphere UniverseHitSphere){
+    // Calcula a distância entre o centro da esfera e o ponto mais próximo na caixa delimitada (hit box)
+    glm::vec3 closestPoint = glm::clamp(UniverseHitSphere.center, SpaceshipHitBox.minPoint, SpaceshipHitBox.maxPoint);
+    glm::vec3 offset = UniverseHitSphere.center - closestPoint;
+    float distanceSquared = glm::dot(offset, offset);
+
+    // Verifica se a distância ao quadrado é menor que o quadrado do raio da esfera
+    if (distanceSquared <= (UniverseHitSphere.radius * UniverseHitSphere.radius)) {
+        // Há colisão
+        return true;
+    }
+
+    // Sem colisão
+    return false;
+
 }
