@@ -76,16 +76,16 @@ void main()
     float V = 0.0;
 
     // Espectro da fonte de iluminação
-    vec3 I = vec3(1.0,1.0,1.0); // espectro da fonte de luz
+    vec3 I = vec3(0.8,0.8,0.8); // espectro da fonte de luz
 
     // Espectro da luz ambiente
-    vec3 Ia = vec3(0.2,0.2,0.2); // espectro da luz ambiente
+    vec3 Ia = vec3(0.1,0.1,0.1); // espectro da luz ambiente
 
      // Parâmetros que definem as propriedades espectrais da superfície
     vec3 Kd; // Refletância difusa
     vec3 Ks; // Refletância especular
     vec3 Ka; // Refletância ambiente
-    float q; // Expoente especular para o modelo de iluminação de Blinn-Phong
+    int q; // Expoente especular para o modelo de iluminação de Blinn-Phong
 
     if ( object_id == ASTEROID )
     {
@@ -93,12 +93,25 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
+        Ka = vec3(0.2f,0.3f,1.0f);
+        Ks = vec3(0.2f, 0.2f, 0.2f);
+
+        q = 5;
+
+        vec3 ambient_term = Ka * Ia;
+        vec3 BlinnPhong_term = Ks * I * pow(dot(n,h),q);
+
         vec3 Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
         float lambert = max(0,dot(n,l));
-        color.rgb = Kd0 * I * (lambert + 0.01);
+
+        color.rgb = ((Kd0 * I * lambert) + ambient_term + BlinnPhong_term);
+
     }
     else if ( object_id == SPHERE )
     {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
 
         vec4 bbox_center = (bbox_min + bbox_max) / 2.0;
 
@@ -124,17 +137,9 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
-        Kd = vec3(0.2f,0.3f,1.0f);
-        Ka = vec3(0.2f,0.3f,1.0f);
-        Ks = vec3(1.0,1.0f,1.0f);
-
-        vec3 ambient_term = Ka * Ia;
-        vec3 BlinnPhong_term = Ks * I * pow(dot(n,h),q);
-
         vec3 Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
         float lambert = max(0,dot(n,l));
-
-        color.rgb = Kd0 * (((Kd * I * lambert) + ambient_term + BlinnPhong_term) + 0.01);
+        color.rgb = Kd0 * I * (lambert + 0.01);
     }
     else if ( object_id == COIN )
     {
@@ -150,4 +155,3 @@ void main()
     color.a = 1;
     color.rgb = pow(color.rgb, vec3(1.0,1.0,1.0)/2.2);
 }
-

@@ -112,6 +112,7 @@ struct ObjModel
 // Desenha os modelos das moedas e asteroides
 void LoadCoins();
 void LoadAsteroids();
+void LoadBezierAsteroids();
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -367,6 +368,7 @@ int main(int argc, char *argv[])
     glFrontFace(GL_CCW);
 
     float speed = 2.0f; // Velocidade da câmera
+    // Atualiza delta de tempo
     float prev_time = (float)glfwGetTime();
     float delta_t;
 
@@ -376,9 +378,17 @@ int main(int argc, char *argv[])
     glm::vec4 spaceship_position = glm::vec4(camera_position_c.x, camera_position_c.y - 0.5f, camera_position_c.z + 3.0f, 1.0f);
     glm::vec4 displacement = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // Vetor que define o deslocamento da nave em relação ao início
 
+    float start_bezier = 0;
+    float t;
+    glm::vec4 p1Bezier;
+    glm::vec4 p2Bezier;
+    glm::vec4 p3Bezier;
+    glm::vec4 p4Bezier;
+
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
+
         // Aqui executamos as operações de renderização
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -472,6 +482,14 @@ int main(int argc, char *argv[])
 #define SPHERE 2
 #define COIN 3
 
+        glCullFace(GL_FRONT);
+        // Desenhamos o modelo da esfera
+        model = Matrix_Translate(-10.0f, -10.0f, 1.0f) * Matrix_Scale(500.0f, 500.0f, 500.0f);
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, SPHERE);
+        DrawVirtualObject("the_sphere");
+        glCullFace(GL_BACK);
+
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z) * Matrix_Scale(0.5f, 0.5f, 0.5f) * Matrix_Rotate_Y(3.1415 + g_CameraTheta) * Matrix_Rotate_X(g_CameraPhi) * Matrix_Rotate_Z(g_AngleZ * 0.1f);
 
@@ -485,13 +503,33 @@ int main(int argc, char *argv[])
         // Desenhamos os modelos dos asteroides
         LoadAsteroids();
 
-        glCullFace(GL_FRONT);
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-10.0f, -10.0f, 1.0f) * Matrix_Scale(500.0f, 500.0f, 500.0f);
-        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        DrawVirtualObject("the_sphere");
-        glCullFace(GL_BACK);
+        // Desenha asteroides em relação ao seu ponto atual na curva de Bezier
+        float asteroid_time = current_time - start_bezier;
+        // t precisa estar em um intervalo entre 0 e 1
+        if (start_bezier == 0)
+        {
+            // cria os pontos de bezier (4)
+            start_bezier = current_time;
+            p1Bezier = glm::vec4(-200 + rand() % 20, -100, -100, 1);
+            p2Bezier = glm::vec4(-100 + rand() % 20, 100, -80, 1);
+            p3Bezier = glm::vec4(rand() % 20, 10, -80, 1);
+            p4Bezier = glm::vec4(100 + rand() % 20, 80, -60, 1);
+        }
+        else if (asteroid_time >= 8)
+        {
+            start_bezier = 0;
+        }
+        else
+        {
+            t = asteroid_time / 8;
+            // Seguimos formula
+            glm::vec4 bezier_place = (float)(pow(1 - t, 3)) * p1Bezier + (float)(3 * t * pow(1 - t, 2)) * p2Bezier + (float)(3 * pow(t, 2) * (1 - t)) * p3Bezier + (float)(pow(t, 3)) * p4Bezier;
+            // Desenhamos o modelo da esfera
+            model = Matrix_Translate(bezier_place.x, bezier_place.y, bezier_place.z) * Matrix_Scale(4.6f, 6.4f, 7.0f);
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, ASTEROID);
+            DrawVirtualObject("Asteroid");
+        }
 
         // Variáveis para utilizar no sistema de colisões da nave
         glm::vec3 SpaceshipDimensions = glm::vec3(0.2f, 0.2f, 1.0);
@@ -1273,7 +1311,8 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
 
     if (key == GLFW_KEY_Y && action == GLFW_PRESS)
     {
-        g_AngleY += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
+        g_AngleY += (mod & GLFW_MOD_SHIFT) ? -delta
+                                           : delta;
     }
 
     if (key == GLFW_KEY_Z)
