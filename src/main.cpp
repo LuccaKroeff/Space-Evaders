@@ -109,6 +109,7 @@ struct ObjModel
 // Desenha os modelos das moedas e asteroides
 void LoadCoins();
 void LoadAsteroids();
+void LoadBezierAsteroids();
 
 // Declaração de funções utilizadas para pilha de matrizes de modelagem.
 void PushMatrix(glm::mat4 M);
@@ -356,6 +357,7 @@ int main(int argc, char* argv[])
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
     {
+
         // Aqui executamos as operações de renderização
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -447,6 +449,15 @@ int main(int argc, char* argv[])
         #define SPHERE 2
         #define COIN 3
 
+         glCullFace(GL_FRONT);
+        // Desenhamos o modelo da esfera
+        model = Matrix_Translate(-10.0f,-10.0f,1.0f)
+              * Matrix_Scale(500.0f, 500.0f, 500.0f);
+        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, SPHERE);
+        DrawVirtualObject("the_sphere");
+        glCullFace(GL_BACK);
+
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
                 * Matrix_Scale(0.5f, 0.5f, 0.5f)
@@ -464,15 +475,8 @@ int main(int argc, char* argv[])
         // Desenhamos os modelos dos asteroides
         LoadAsteroids();
 
-
-        glCullFace(GL_FRONT);
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-10.0f,-10.0f,1.0f)
-              * Matrix_Scale(500.0f, 500.0f, 500.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        DrawVirtualObject("the_sphere");
-        glCullFace(GL_BACK);
+        // Desenha asteroides em relação ao seu ponto atual na curva de Bezier
+        LoadBezierAsteroids();
 
         // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
         TextRendering_ShowProjection(window);
@@ -576,6 +580,10 @@ void DrawVirtualObject(const char* object_name)
     // "Desligamos" o VAO, evitando assim que operações posteriores venham a
     // alterar o mesmo. Isso evita bugs.
     glBindVertexArray(0);
+}
+
+void LoadBezierAsteroids() {
+
 }
 
 void LoadAsteroids(){
