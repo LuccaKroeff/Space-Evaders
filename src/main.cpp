@@ -560,6 +560,9 @@ int main(int argc, char *argv[])
             DrawCoin0 = true;
             DrawCoin1 = true;
             DrawCoin2 = true;
+
+            g_CameraTheta = 0;
+            g_CameraPhi = 0;
         }
 
 
