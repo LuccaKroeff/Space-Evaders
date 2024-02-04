@@ -228,6 +228,7 @@ bool tecla_W_pressionada = false;
 bool tecla_A_pressionada = false;
 bool tecla_S_pressionada = false;
 bool tecla_D_pressionada = false;
+bool tecla_Z_pressionada = false;
 
 // Definindo variáveis para controle de renderização caso haja colisão
 bool ShouldDrawCoin0 = true;
@@ -378,12 +379,16 @@ int main(int argc, char *argv[])
     glm::vec4 spaceship_position = glm::vec4(camera_position_c.x, camera_position_c.y - 0.5f, camera_position_c.z + 3.0f, 1.0f);
     glm::vec4 displacement = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // Vetor que define o deslocamento da nave em relação ao início
 
+    // Variáveis usadas para representar curva de bezier
     float start_bezier = 0;
     float t;
     glm::vec4 p1Bezier;
     glm::vec4 p2Bezier;
     glm::vec4 p3Bezier;
     glm::vec4 p4Bezier;
+
+    // Variável na rotação da spaceship
+    float delta = 3.141592 / 8;
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -407,26 +412,31 @@ int main(int argc, char *argv[])
 
         if (tecla_W_pressionada)
         {
-            // Movimenta câmera para FRENTE
+            // Movimenta spaceship para FRENTE
             displacement += (camera_view_vector / norm(camera_view_vector)) * speed * delta_t;
         }
 
         if (tecla_A_pressionada)
         {
-            // Movimenta câmera para ESQUERDA
+            // Movimenta spaceship para ESQUERDA
             displacement -= -(crossproduct(camera_up_vector, camera_view_vector / norm(camera_view_vector)) / norm(crossproduct(camera_up_vector, (camera_view_vector / norm(camera_view_vector))))) * speed * delta_t;
         }
 
         if (tecla_S_pressionada)
         {
-            // Movimenta câmera para TRÁS
+            // Movimenta spaceship para TRÁS
             displacement -= (camera_view_vector / norm(camera_view_vector)) * speed * delta_t;
         }
 
         if (tecla_D_pressionada)
         {
-            // Movimenta câmera para DIREITA
+            // Movimenta spaceship para DIREITA
             displacement += -(crossproduct(camera_up_vector, camera_view_vector / norm(camera_view_vector)) / norm(crossproduct(camera_up_vector, (camera_view_vector / norm(camera_view_vector))))) * speed * delta_t;
+        }
+        if (tecla_Z_pressionada)
+        {
+            // Rotaciona spaceship
+            g_AngleZ += delta * delta_t * 40;
         }
 
         // Recalcula posição da nave com base no deslocamento calculado
@@ -477,10 +487,10 @@ int main(int argc, char *argv[])
         glUniformMatrix4fv(g_view_uniform, 1, GL_FALSE, glm::value_ptr(view));
         glUniformMatrix4fv(g_projection_uniform, 1, GL_FALSE, glm::value_ptr(projection));
 
-#define ASTEROID 0
-#define SPACESHIP 1
-#define SPHERE 2
-#define COIN 3
+        #define ASTEROID 0
+        #define SPACESHIP 1
+        #define SPHERE 2
+        #define COIN 3
 
         glCullFace(GL_FRONT);
         // Desenhamos o modelo da esfera
@@ -491,7 +501,11 @@ int main(int argc, char *argv[])
         glCullFace(GL_BACK);
 
         // Desenhamos o modelo da nave
-        model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z) * Matrix_Scale(0.5f, 0.5f, 0.5f) * Matrix_Rotate_Y(3.1415 + g_CameraTheta) * Matrix_Rotate_X(g_CameraPhi) * Matrix_Rotate_Z(g_AngleZ * 0.1f);
+        model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
+                * Matrix_Scale(0.5f, 0.5f, 0.5f)
+                * Matrix_Rotate_Y(3.1415 + g_CameraTheta)
+                * Matrix_Rotate_X(g_CameraPhi)
+                * Matrix_Rotate_Z(g_AngleZ * 0.1f);
 
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, SPACESHIP);
@@ -1317,7 +1331,14 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
 
     if (key == GLFW_KEY_Z)
     {
-        g_AngleZ += (mod & GLFW_MOD_SHIFT) ? -delta : delta;
+        if (action == GLFW_PRESS)
+        {
+            tecla_Z_pressionada = true;
+        }
+        else if (action == GLFW_RELEASE)
+        {
+            tecla_Z_pressionada = false;
+        }
     }
 
     // Se o usuário apertar a tecla espaço, resetamos os ângulos de Euler para zero.
