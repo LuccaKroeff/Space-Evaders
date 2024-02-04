@@ -1923,7 +1923,7 @@
 	<inttypes.h>
 	<stdint.h>
 
-1706971583 source:c:\users\i585963\desktop\fcg\spaceevaders\src\main.cpp
+1706995435 source:c:\users\i585963\desktop\fcg\spaceevaders\src\main.cpp
 	<cmath>
 	<cstdio>
 	<cstdlib>
@@ -1945,6 +1945,7 @@
 	<stb_image.h>
 	"utils.h"
 	"matrices.h"
+	"collisions.h"
 
 1705963273 c:\users\i585963\desktop\fcg\spaceevaders\include\glfw\glfw3.h
 	<stddef.h>
