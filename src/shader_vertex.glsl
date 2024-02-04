@@ -19,6 +19,10 @@ out vec4 position_world;
 out vec4 position_model;
 out vec4 normal;
 out vec2 texcoords;
+out vec4 gouraud;
+
+uniform vec4 light_pos;
+uniform sampler2D TextureImage3;
 
 void main()
 {
@@ -63,5 +67,34 @@ void main()
 
     // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
     texcoords = texture_coefficients;
+
+    vec4 origin = vec4(0.0, 0.0, 0.0, 1.0);
+    vec4 camera_position = inverse(view) * origin;
+
+    // Espectro da fonte de iluminação
+    vec3 I = vec3(1.0,1.0,1.0); // espectro da fonte de luz
+
+    // Espectro da luz ambiente
+    vec3 Ia = vec3(0.7,0.9,0.7); // espectro da luz ambiente
+
+    vec3 Ks = vec3(0.2f, 0.2f, 0.2f);
+
+    int q = 30;
+
+    vec3 Kd0 = texture(TextureImage3, texcoords).rgb;
+    vec3 Ka = Kd0 * 0.5f;
+
+    // Vetor que define o sentido da câmera em relação ao ponto atual.
+    vec4 v = normalize(camera_position - position_world);
+    vec4 l = normalize(light_pos - position_world);
+    vec4 n = normalize(normal);
+    vec4 r = -l+(2*n*(dot(n,l)));
+
+    vec3 lambert = Kd0 * I * max(0,dot(n,l));
+    vec3 ambient_term = Ka * Ia;
+
+
+    // Avaliar equação do modelo de iluminação:
+    gouraud.rgb = ambient_term + lambert + Ks*I*max(0,dot(r,v));
 }
 

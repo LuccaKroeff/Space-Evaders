@@ -13,6 +13,8 @@ in vec4 position_model;
 // Coordenadas de textura obtidas do arquivo OBJ (se existirem!)
 in vec2 texcoords;
 
+in vec4 gouraud;
+
 // Matrizes computadas no código C++ e enviadas para a GPU
 uniform mat4 model;
 uniform mat4 view;
@@ -63,29 +65,33 @@ void main()
     vec4 n = normalize(normal);
 
     // Vetor que define o sentido da fonte de luz em relação ao ponto atual.
-    vec4 l = normalize(vec4(-3.0,3.0,3.0,0.0));
+    vec4 light_pos = normalize(vec4(-200.0,-3.0,3.0,0.0));
+
+    vec4 l = normalize(light_pos - position_world);
 
     // Vetor que define o sentido da câmera em relação ao ponto atual.
     vec4 v = normalize(camera_position - p);
+    vec4 r = -l+(2*n*(dot(n,l)));
 
     // termo h para Blinn-Phong
-    vec4 h = v + l;
+    vec4 h = v + light_pos;
+    h = normalize(h);
 
     // Coordenadas de textura U e V
     float U = 0.0;
     float V = 0.0;
 
     // Espectro da fonte de iluminação
-    vec3 I = vec3(0.8,0.8,0.8); // espectro da fonte de luz
+    vec3 I = vec3(1.0,1.0,1.0); // espectro da fonte de luz
 
     // Espectro da luz ambiente
-    vec3 Ia = vec3(0.1,0.1,0.1); // espectro da luz ambiente
+    vec3 Ia = vec3(0.7,0.9,0.7); // espectro da luz ambiente
 
      // Parâmetros que definem as propriedades espectrais da superfície
     vec3 Kd; // Refletância difusa
     vec3 Ks; // Refletância especular
     vec3 Ka; // Refletância ambiente
-    int q; // Expoente especular para o modelo de iluminação de Blinn-Phong
+    int  q;  // Expoente especular para o modelo de iluminação de Blinn-Phong
 
     if ( object_id == ASTEROID )
     {
@@ -93,18 +99,18 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
-        Ka = vec3(0.2f,0.3f,1.0f);
         Ks = vec3(0.2f, 0.2f, 0.2f);
 
-        q = 5;
+        q = 30;
 
+        vec3 Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
+        Ka = Kd0 / 2;
+
+        vec3 lambert = Kd0 * I * max(0,dot(n,l));
         vec3 ambient_term = Ka * Ia;
         vec3 BlinnPhong_term = Ks * I * pow(dot(n,h),q);
 
-        vec3 Kd0 = texture(TextureImage2, vec2(U,V)).rgb;
-        float lambert = max(0,dot(n,l));
-
-        color.rgb = ((Kd0 * I * lambert) + ambient_term + BlinnPhong_term);
+        color.rgb = lambert + ambient_term + BlinnPhong_term;
 
     }
     else if ( object_id == SPHERE )
@@ -137,19 +143,21 @@ void main()
         U = texcoords.x;
         V = texcoords.y;
 
+        Ks = vec3(0.2f, 0.2f, 0.2f);
+
         vec3 Kd0 = texture(TextureImage0, vec2(U,V)).rgb;
-        float lambert = max(0,dot(n,l));
-        color.rgb = Kd0 * I * (lambert + 0.01);
+        Ka = Kd0 * 0.5f;
+        vec3 lambert = Kd0 * I * max(0,dot(n,l));
+        vec3 ambient_term = Ka * Ia;
+
+
+        // Avaliar equação do modelo de iluminação (para phong shading):
+        color.rgb = ambient_term + lambert + Ks*I*max(0,dot(r,v));
+
     }
     else if ( object_id == COIN )
     {
-        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
-        U = texcoords.x;
-        V = texcoords.y;
-
-        vec3 Kd0 = texture(TextureImage3, vec2(U,V)).rgb;
-        float lambert = max(0,dot(n,l));
-        color.rgb = Kd0 * (lambert + 0.02);
+        color = gouraud;
     }
 
     color.a = 1;

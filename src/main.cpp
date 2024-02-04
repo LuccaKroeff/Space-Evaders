@@ -229,21 +229,6 @@ bool tecla_A_pressionada = false;
 bool tecla_S_pressionada = false;
 bool tecla_D_pressionada = false;
 
-// Definindo variáveis para controle de renderização caso haja colisão
-bool ShouldDrawCoin0 = true;
-bool ShouldDrawCoin1 = true;
-bool ShouldDrawCoin2 = true;
-bool ShouldReturnSpaceshipToOrigin = false;
-
-// Hitbox de moedas e asteroides
-HitBox Coin0HitBox;
-HitBox Coin1HitBox;
-HitBox Coin2HitBox;
-HitBox HitBoxAsteroid;
-
-// Hitsphere do "universo"
-HitSphere HitSphereUniverse;
-
 int main(int argc, char* argv[])
 {
     // Inicializamos a biblioteca GLFW, utilizada para criar uma janela do
@@ -527,27 +512,12 @@ int main(int argc, char* argv[])
         DrawVirtualObject("Asteroid");
     }
 
-        // Variáveis para utilizar no sistema de colisões da nave
+        // Variáveis para utilizar no sistema de colisões
         glm::vec3 SpaceshipDimensions = glm::vec3(4.0f, 4.0f, 4.0f);
         glm::vec3 lowerBackLeft = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) - SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
         glm::vec3 upperFrontRight = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) + SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
 
-        HitBox SpaceshipHitBox = { lowerBackLeft, upperFrontRight };
-
-        if(SpaceshipCoinCollision(SpaceshipHitBox, Coin0HitBox))
-        {
-            ShouldDrawCoin0 = false;
-        }
-
-        if(SpaceshipCoinCollision(SpaceshipHitBox, Coin1HitBox))
-        {
-            ShouldDrawCoin1 = false;
-        }
-
-        if(SpaceshipCoinCollision(SpaceshipHitBox, Coin2HitBox))
-        {
-            ShouldDrawCoin2 = false;
-        }
+        HitBox HitBoxSpaceship = { lowerBackLeft, upperFrontRight };
 
         // Imprimimos na informação sobre a matriz de projeção sendo utilizada.
         TextRendering_ShowProjection(window);
@@ -702,33 +672,27 @@ void LoadAsteroids(){
 void LoadCoins(){
     glm::mat4 model = Matrix_Identity();
 
-    if(ShouldDrawCoin0){
-        // Desenhamos os modelos das moedas
-        model = Matrix_Translate(0.0f, -1.75f, -7.5f)
-                * Matrix_Scale(0.5f, 0.5f, 0.5f)
-                * Matrix_Rotate_Y((float)glfwGetTime());
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, COIN);
-        DrawVirtualObject("Coin");
-    }
+    // Desenhamos os modelos das moedas
+    model = Matrix_Translate(0.0f, -1.75f, -7.5f)
+            * Matrix_Scale(0.5f, 0.5f, 0.5f)
+            * Matrix_Rotate_Y((float)glfwGetTime());
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, COIN);
+    DrawVirtualObject("Coin");
 
-    if(ShouldDrawCoin1){
-        model = Matrix_Translate(0.0f, 0.0f, -14.5f)
-                * Matrix_Scale(0.5f, 0.5f, 0.5f)
-                * Matrix_Rotate_Y((float)glfwGetTime());
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, COIN);
-        DrawVirtualObject("Coin");
-    }
+    model = Matrix_Translate(0.0f, 0.0f, -14.5f)
+            * Matrix_Scale(0.5f, 0.5f, 0.5f)
+            * Matrix_Rotate_Y((float)glfwGetTime());
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, COIN);
+    DrawVirtualObject("Coin");
 
-    if(ShouldDrawCoin2){
-        model = Matrix_Translate(3.0f, -4.0f, -18.5f)
-                * Matrix_Scale(0.5f, 0.5f, 0.5f)
-                * Matrix_Rotate_Y((float)glfwGetTime());
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, COIN);
-        DrawVirtualObject("Coin");
-    }
+    model = Matrix_Translate(3.0f, -4.0f, -18.5f)
+            * Matrix_Scale(0.5f, 0.5f, 0.5f)
+            * Matrix_Rotate_Y((float)glfwGetTime());
+    glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
+    glUniform1i(g_object_id_uniform, COIN);
+    DrawVirtualObject("Coin");
 }
 
 // Função que carrega os shaders de vértices e de fragmentos que serão
