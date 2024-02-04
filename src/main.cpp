@@ -211,10 +211,10 @@ bool tecla_D_pressionada = false;
 bool tecla_Z_pressionada = false;
 
 // Definindo variáveis para controle de renderização caso haja colisão
-bool ShouldDrawCoin0 = true;
-bool ShouldDrawCoin1 = true;
-bool ShouldDrawCoin2 = true;
-bool ShouldReturnSpaceshipToOrigin = false;
+bool DrawCoin0 = true;
+bool DrawCoin1 = true;
+bool DrawCoin2 = true;
+bool ReturnSpaceshipToOrigin = false;
 
 // Hitbox de moedas e asteroides
 HitBox Coin0HitBox;
@@ -525,29 +525,41 @@ int main(int argc, char *argv[])
 
         // Variáveis para utilizar no sistema de colisões da nave
         glm::vec3 SpaceshipDimensions = glm::vec3(0.2f, 0.2f, 1.0);
-        glm::vec3 lowerBackLeft = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) - SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
-        glm::vec3 upperFrontRight = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) + SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
+        glm::vec3 BackLeft = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) - SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
+        glm::vec3 FrontRight = glm::vec3(spaceship_position.x, spaceship_position.y, spaceship_position.z) + SpaceshipDimensions * 0.5f + glm::vec3(displacement.x, displacement.y, displacement.z);
 
-        HitBox SpaceshipHitBox = {lowerBackLeft, upperFrontRight};
+        HitBox SpaceshipHitBox = {BackLeft, FrontRight};
 
         if (SpaceshipCoinCollision(SpaceshipHitBox, Coin0HitBox))
         {
-            ShouldDrawCoin0 = false;
+            DrawCoin0 = false;
         }
 
         if (SpaceshipCoinCollision(SpaceshipHitBox, Coin1HitBox))
         {
-            ShouldDrawCoin1 = false;
+            DrawCoin1 = false;
         }
 
         if (SpaceshipCoinCollision(SpaceshipHitBox, Coin2HitBox))
         {
-            ShouldDrawCoin2 = false;
+            DrawCoin2 = false;
         }
 
-        if (SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid0HitBox))
+        // Se houver colisão com algum asteróide ou com o universo
+        if (SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid0HitBox) ||
+            SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid1HitBox) ||
+            SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid2HitBox) ||
+            SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid3HitBox) ||
+            SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid4HitBox) ||
+            SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid5HitBox))
         {
-            // printf("OIIII\n");
+            // Spaceship retorna para origem
+            displacement = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+            // Colocamos coins novamente no mapa
+            DrawCoin0 = true;
+            DrawCoin1 = true;
+            DrawCoin2 = true;
         }
 
 
@@ -568,42 +580,71 @@ void LoadAsteroids()
     glm::mat4 model = Matrix_Identity();
 
     // Desenhamos os modelos de asteroides
-    model = Matrix_Translate(0.0f, -2.5f, -6.0f) * Matrix_Rotate_X(0) * Matrix_Scale(1.0, 1.0, 1.0);
+    model = Matrix_Translate(0.0f, -2.5f, -6.0f);
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, ASTEROID);
     DrawVirtualObject("Asteroid");
 
-    // Definimos HitBox do asteroide
-    glm::vec3 AsteroidDimensions = glm::vec3(2.0f, 1.5f, 0.3f);
-    // (0.0, -1.5, -6.0)
-    glm::vec3 lowerBackLeft = glm::vec3(0.0f, -4.0f, -9.5f) - AsteroidDimensions * 0.5f;
-    glm::vec3 upperFrontRight = glm::vec3(0.0f, -4.0f, -9.5f) + AsteroidDimensions * 0.5f;
-    Asteroid0HitBox = {lowerBackLeft, upperFrontRight};
+    // Definimos HitBox do Asteroide0
+    glm::vec3 AsteroidDimensions = glm::vec3(4.0f, 4.0f, 3.0f);
+    glm::vec3 BackLeft = glm::vec3(0.0f, -5.0f, -12.5f) - AsteroidDimensions * 0.5f;
+    glm::vec3 FrontRight = glm::vec3(0.0f, -5.0f, -12.5f) + AsteroidDimensions * 0.5f;
+    Asteroid0HitBox = {BackLeft, FrontRight};
 
-    model = Matrix_Translate(6.0f, -1.5f, -14.5f) * Matrix_Rotate_Y(0.7) * Matrix_Scale(1.75, 1.5, 1.0);
+    // Asteroid1
+    model = Matrix_Translate(6.0f, -1.5f, -14.5f) * Matrix_Scale(1.75, 1.5, 1.0);
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, ASTEROID);
     DrawVirtualObject("Asteroid");
 
+    AsteroidDimensions = glm::vec3(7.0f, 3.5f, 3.0f);
+    BackLeft = glm::vec3(10.5f, -3.0f, -30.f) - AsteroidDimensions * 0.5f;
+    FrontRight = glm::vec3(10.5f, -2.25f, -30.0f) + AsteroidDimensions * 0.5f;
+    Asteroid1HitBox = {BackLeft, FrontRight};
+
+    // Asteroid2
     model = Matrix_Translate(1.0f, -0.5f, -10.5f) * Matrix_Rotate_Z(4.0);
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, ASTEROID);
     DrawVirtualObject("Asteroid");
 
+    AsteroidDimensions = glm::vec3(4.0f, 2.0f, 3.0f);
+    BackLeft = glm::vec3(1.0f, -0.80f, -22.0) - AsteroidDimensions * 0.5f;
+    FrontRight = glm::vec3(1.0f, -0.80f, -22.0) + AsteroidDimensions * 0.5f;
+    Asteroid2HitBox = {BackLeft, FrontRight};
+
+    // Asteroid3
     model = Matrix_Translate(0.5f, 2.5f, -10.0f) * Matrix_Rotate_X(3.0) * Matrix_Scale(1.0, 0.9, 1.45);
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, ASTEROID);
     DrawVirtualObject("Asteroid");
 
+    AsteroidDimensions = glm::vec3(4.0f, 2.0f, 3.0f);
+    BackLeft = glm::vec3(1.5f, 5.0f, -20.0) - AsteroidDimensions * 0.5f;
+    FrontRight = glm::vec3(1.5f, 5.0f, -20.0) + AsteroidDimensions * 0.5f;
+    Asteroid3HitBox = {BackLeft, FrontRight};
+
+    // Asteroid4
     model = Matrix_Translate(-2.5f, 1.0f, -7.5f) * Matrix_Rotate_Y(2.0) * Matrix_Scale(0.6, 1.2, 1.25);
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, ASTEROID);
     DrawVirtualObject("Asteroid");
 
+    AsteroidDimensions = glm::vec3(4.0f, 5.0f, 3.0f);
+    BackLeft = glm::vec3(-4.5f, 2.0f, -15.0) - AsteroidDimensions * 0.5f;
+    FrontRight = glm::vec3(-4.5f, 2.0f, -15.0) + AsteroidDimensions * 0.5f;
+    Asteroid4HitBox = {BackLeft, FrontRight};
+
+    // Asteroid5
     model = Matrix_Translate(-3.5f, -1.5f, -13.5f) * Matrix_Rotate_Z(1.0) * Matrix_Scale(0.95, 1.0, 1.4);
     glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
     glUniform1i(g_object_id_uniform, ASTEROID);
     DrawVirtualObject("Asteroid");
+
+    AsteroidDimensions = glm::vec3(7.0f, 1.5f, 3.5f);
+    BackLeft = glm::vec3(-7.0f, -3.9f, -27.0) - AsteroidDimensions * 0.5f;
+    FrontRight = glm::vec3(-7.0f, -1.5f, -27.0) + AsteroidDimensions * 0.5f;
+    Asteroid5HitBox = {BackLeft, FrontRight};
 }
 
 void LoadCoins()
@@ -611,7 +652,7 @@ void LoadCoins()
     glm::mat4 model = Matrix_Identity();
     glm::vec3 CoinDimensions = glm::vec3(3.5f, 1.5f, 2.0f);
 
-    if (ShouldDrawCoin0)
+    if (DrawCoin0)
     {
         // Desenhamos os modelos das moedas
         model = Matrix_Translate(0.0f, -1.75f, -7.5f) * Matrix_Scale(0.5f, 0.5f, 0.5f) * Matrix_Rotate_Y((float)glfwGetTime());
@@ -620,33 +661,33 @@ void LoadCoins()
         DrawVirtualObject("Coin");
 
         // Definimos HitBox da moeda
-        glm::vec3 lowerBackLeft = glm::vec3(0.0f, -1.75f, -14.5f) - CoinDimensions;
-        glm::vec3 upperFrontRight = glm::vec3(0.0f, -1.75f, -14.5f) + CoinDimensions;
-        Coin0HitBox = {lowerBackLeft, upperFrontRight};
+        glm::vec3 BackLeft = glm::vec3(0.0f, -1.75f, -14.5f) - CoinDimensions;
+        glm::vec3 FrontRight = glm::vec3(0.0f, -1.75f, -14.5f) + CoinDimensions;
+        Coin0HitBox = {BackLeft, FrontRight};
     }
 
-    if (ShouldDrawCoin1)
+    if (DrawCoin1)
     {
         model = Matrix_Translate(0.0f, 0.0f, -14.5f) * Matrix_Scale(0.5f, 0.5f, 0.5f) * Matrix_Rotate_Y((float)glfwGetTime());
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, COIN);
         DrawVirtualObject("Coin");
 
-        glm::vec3 lowerBackLeft = glm::vec3(0.0f, 2.0f, -29.0f) - CoinDimensions;
-        glm::vec3 upperFrontRight = glm::vec3(0.0f, 2.0f, -29.0f) + CoinDimensions;
-        Coin1HitBox = {lowerBackLeft, upperFrontRight};
+        glm::vec3 BackLeft = glm::vec3(0.0f, 2.0f, -29.0f) - CoinDimensions;
+        glm::vec3 FrontRight = glm::vec3(0.0f, 2.0f, -29.0f) + CoinDimensions;
+        Coin1HitBox = {BackLeft, FrontRight};
     }
 
-    if (ShouldDrawCoin2)
+    if (DrawCoin2)
     {
         model = Matrix_Translate(3.0f, -4.0f, -18.5f) * Matrix_Scale(0.5f, 0.5f, 0.5f) * Matrix_Rotate_Y((float)glfwGetTime());
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, COIN);
         DrawVirtualObject("Coin");
 
-        glm::vec3 lowerBackLeft = glm::vec3(5.0f, -6.0f, -36.5f) - CoinDimensions;
-        glm::vec3 upperFrontRight = glm::vec3(5.0f, -6.0f, -36.5f) + CoinDimensions;
-        Coin2HitBox = {lowerBackLeft, upperFrontRight};
+        glm::vec3 BackLeft = glm::vec3(5.0f, -6.0f, -36.5f) - CoinDimensions;
+        glm::vec3 FrontRight = glm::vec3(5.0f, -6.0f, -36.5f) + CoinDimensions;
+        Coin2HitBox = {BackLeft, FrontRight};
     }
 }
 
@@ -1214,8 +1255,6 @@ void KeyCallback(GLFWwindow *window, int key, int scancode, int action, int mod)
     // O código abaixo implementa a seguinte lógica:
     //   Se apertar tecla Z       então g_AngleZ += delta;
     //   Se apertar tecla shift+Z então g_AngleZ -= delta;
-
-    float delta = 3.141592 / 8; // 45.0 graus, em radianos.
 
     if (key == GLFW_KEY_Z)
     {
