@@ -306,6 +306,8 @@ int main(int argc, char *argv[])
     LoadTextureImage("../../data/space.jpg");     // TextureImage1
     LoadTextureImage("../../data/meteoro.png");   // TextureImage2
     LoadTextureImage("../../data/gold_2.jpg");    // TextureImage3
+    LoadTextureImage("../../data/normal.jpg");    // TextureImage4
+    LoadTextureImage("../../data/basecolor.jpg"); // TextureImage5
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel spaceshipmodel("../../data/spaceship.obj");
@@ -315,6 +317,10 @@ int main(int argc, char *argv[])
     ObjModel spheremodel("../../data/sphere.obj");
     ComputeNormals(&spheremodel);
     BuildTrianglesAndAddToVirtualScene(&spheremodel);
+
+    ObjModel moonmodel("../../data/moon.obj");
+    ComputeNormals(&moonmodel);
+    BuildTrianglesAndAddToVirtualScene(&moonmodel);
 
     // Construímos a representação de objetos geométricos através de malhas de triângulos
     ObjModel asteroidmodel("../../data/asteroid.obj");
@@ -469,6 +475,7 @@ int main(int argc, char *argv[])
         #define SPACESHIP 1
         #define SPHERE 2
         #define COIN 3
+        #define MOON 4
 
         glCullFace(GL_FRONT);
         // Desenhamos o modelo da esfera
@@ -477,6 +484,12 @@ int main(int argc, char *argv[])
         glUniform1i(g_object_id_uniform, SPHERE);
         DrawVirtualObject("the_sphere");
         glCullFace(GL_BACK);
+
+        // Desenhamos o modelo da lua
+        model = Matrix_Translate(30.0f, 20.0f, -30.0f) * Matrix_Scale(4.0f, 4.0f, 4.0f);
+        glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+        glUniform1i(g_object_id_uniform, MOON);
+        DrawVirtualObject("moon");
 
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
@@ -809,6 +822,8 @@ void LoadShadersFromFiles()
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage1"), 1);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage2"), 2);
     glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage3"), 3);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage4"), 4);
+    glUniform1i(glGetUniformLocation(g_GpuProgramID, "TextureImage5"), 5);
     glUseProgram(0);
 }
 

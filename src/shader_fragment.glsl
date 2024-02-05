@@ -25,6 +25,7 @@ uniform mat4 projection;
 #define SPACESHIP  1
 #define SPHERE 2
 #define COIN 3
+#define MOON 4
 
 
 uniform int object_id;
@@ -38,6 +39,8 @@ uniform sampler2D TextureImage0;
 uniform sampler2D TextureImage1;
 uniform sampler2D TextureImage2;
 uniform sampler2D TextureImage3;
+uniform sampler2D TextureImage4;
+uniform sampler2D TextureImage5;
 
 // O valor de saída ("out") de um Fragment Shader é a cor final do fragmento.
 out vec4 color;
@@ -135,6 +138,32 @@ void main()
         // Cálculo de Lambert não importa para o céu, já que ele está sempre iluminado
         vec3 Kd0 = texture(TextureImage1, vec2(U,V)).rgb;
         color.rgb = Kd0;
+
+    }
+    else if ( object_id == MOON )
+    {
+        // Coordenadas de textura do plano, obtidas do arquivo OBJ.
+        U = texcoords.x;
+        V = texcoords.y;
+
+        vec4 bbox_center = (bbox_min + bbox_max) / 2.0;
+
+        vec4 p_linha = bbox_center + (normalize(position_model - bbox_center));
+
+        vec4 p_vetor = p_linha - bbox_center;
+
+        float px = p_vetor.x;
+        float py = p_vetor.y;
+        float pz = p_vetor.z;
+
+        U = (atan(px, pz) + M_PI)/(2*M_PI);
+        V = ((asin(py/length(p_vetor)) + (M_PI_2))/M_PI);
+
+        // Cálculo de Lambert não importa para o céu, já que ele está sempre iluminado
+        vec3 Kd0 = texture(TextureImage5, vec2(U,V)).rgb;
+        vec3 Kd1 = texture(TextureImage4, vec2(U,V)).rgb;
+
+        color.rgb = (Kd0 + Kd1) / 2;
 
     }
     else if ( object_id == SPACESHIP )
