@@ -17,6 +17,7 @@ struct HitSphere
 
 bool SpaceshipAsteroidCollision(HitBox SpaceshipHitBox, HitBox AsteroidHitBox);
 bool SpaceshipCoinCollision(HitBox SpaceshipHitBox, HitBox CoinHitBox);
-bool SpaceshipUniverseCollision(HitBox SpaceshipHitBox, HitSphere UniverseHitSphere);
+bool SpaceshipMoonCollision(HitBox SpaceshipHitBox, HitSphere MoonHitSphere);
+bool SpaceshipUniverseCollision(HitBox SpaceshipHitBox, float limit);
 
 #endif
