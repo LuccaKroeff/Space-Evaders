@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    float speed = 4.0f; // Velocidade da câmera
+    float speed = 5.0f; // Velocidade da câmera
     // Atualiza delta de tempo
     float prev_time = (float)glfwGetTime();
     float delta_t;
@@ -373,6 +373,9 @@ int main(int argc, char *argv[])
 
     // Variável na rotação da spaceship
     float delta = 3.141592 / 8;
+
+    // Limite que o usuário pode andar em qualquer uma das direções
+    float UniverseLimit = 50.0f;
 
     // Ficamos em um loop infinito, renderizando, até que o usuário feche a janela
     while (!glfwWindowShouldClose(window))
@@ -561,14 +564,15 @@ int main(int argc, char *argv[])
             DrawCoin2 = false;
         }
 
-        // Se houver colisão com algum asteróide ou com o universo
+        // Se houver colisão com algum asteróide, lua ou com o "universo"
         if (SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid0HitBox) ||
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid1HitBox) ||
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid2HitBox) ||
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid3HitBox) ||
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid4HitBox) ||
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid5HitBox) ||
-            SpaceshipMoonCollision(SpaceshipHitBox, MoonHitSphere))
+            SpaceshipMoonCollision(SpaceshipHitBox, MoonHitSphere) ||
+            SpaceshipUniverseCollision(SpaceshipHitBox, UniverseLimit))
         {
             // Spaceship retorna para origem
             displacement = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
