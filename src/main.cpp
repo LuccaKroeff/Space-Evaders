@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    float speed = 5.0f; // Velocidade da câmera
+    float speed = 3.5f; // Velocidade da câmera
     // Atualiza delta de tempo
     float prev_time = (float)glfwGetTime();
     float delta_t;
