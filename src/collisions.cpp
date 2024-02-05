@@ -35,14 +35,14 @@ bool SpaceshipCoinCollision(HitBox SpaceshipHitBox, HitBox CoinHitBox){
 
 }
 
-bool SpaceshipUniverseCollision(HitBox SpaceshipHitBox, HitSphere UniverseHitSphere){
+bool SpaceshipMoonCollision(HitBox SpaceshipHitBox, HitSphere MoonHitSphere){
     // Calcula a distância entre o centro da esfera e o ponto mais próximo na caixa delimitada (hit box)
-    glm::vec3 closestPoint = glm::clamp(UniverseHitSphere.center, SpaceshipHitBox.minPoint, SpaceshipHitBox.maxPoint);
-    glm::vec3 offset = UniverseHitSphere.center - closestPoint;
+    glm::vec3 closestPoint = glm::clamp(MoonHitSphere.center, SpaceshipHitBox.minPoint, SpaceshipHitBox.maxPoint);
+    glm::vec3 offset = MoonHitSphere.center - closestPoint;
     float distanceSquared = glm::dot(offset, offset);
 
     // Verifica se a distância ao quadrado é menor que o quadrado do raio da esfera
-    if (distanceSquared <= (UniverseHitSphere.radius * UniverseHitSphere.radius)) {
+    if (distanceSquared <= (MoonHitSphere.radius * MoonHitSphere.radius)) {
         // Há colisão
         return true;
     }
@@ -51,3 +51,19 @@ bool SpaceshipUniverseCollision(HitBox SpaceshipHitBox, HitSphere UniverseHitSph
     return false;
 
 }
+
+bool SpaceshipUniverseCollision(HitBox SpaceshipHitBox, float limit){
+    // Verifica se a nave encontra-se a uma distância maior que a do limite
+    if(SpaceshipHitBox.maxPoint.x > limit || SpaceshipHitBox.minPoint.x < -limit ||
+       SpaceshipHitBox.maxPoint.y > limit || SpaceshipHitBox.minPoint.y < -limit ||
+       SpaceshipHitBox.maxPoint.z > limit || SpaceshipHitBox.minPoint.z < -limit)
+    {
+        // Há colisão
+        return true;
+    }
+
+    // Sem colisão
+    return false;
+
+}
+
