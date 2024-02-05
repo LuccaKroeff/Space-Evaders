@@ -514,6 +514,12 @@ int main(int argc, char *argv[])
         // Desenhamos os modelos dos asteroides
         LoadAsteroids();
 
+        // pontos da curva de Bezier
+        p1Bezier = glm::vec4(-200, -100, -100, 1);
+        p2Bezier = glm::vec4(-100, 100, -80, 1);
+        p3Bezier = glm::vec4(80, 80, -80, 1);
+        p4Bezier = glm::vec4(150, -120, -60, 1);
+
         // Desenha asteroides em relação ao seu ponto atual na curva de Bezier
         float asteroid_time = current_time - start_bezier;
         // t precisa estar em um intervalo entre 0 e 1
@@ -521,18 +527,14 @@ int main(int argc, char *argv[])
         {
             // cria os pontos de bezier (4)
             start_bezier = current_time;
-            p1Bezier = glm::vec4(-200 + rand() % 20, -100, -100, 1);
-            p2Bezier = glm::vec4(-100 + rand() % 20, 100, -80, 1);
-            p3Bezier = glm::vec4(rand() % 20, 10, -80, 1);
-            p4Bezier = glm::vec4(100 + rand() % 20, 80, -60, 1);
         }
-        else if (asteroid_time >= 8)
+        else if (asteroid_time >= 10)
         {
             start_bezier = 0;
         }
         else
         {
-            t = asteroid_time / 8;
+            t = asteroid_time / 10;
             // Seguimos formula
             glm::vec4 bezier_place = (float)(pow(1 - t, 3)) * p1Bezier + (float)(3 * t * pow(1 - t, 2)) * p2Bezier + (float)(3 * pow(t, 2) * (1 - t)) * p3Bezier + (float)(pow(t, 3)) * p4Bezier;
             // Desenhamos o modelo da esfera
