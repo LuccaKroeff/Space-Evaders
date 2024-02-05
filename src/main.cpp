@@ -352,7 +352,7 @@ int main(int argc, char *argv[])
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
-    float speed = 2.0f; // Velocidade da câmera
+    float speed = 4.0f; // Velocidade da câmera
     // Atualiza delta de tempo
     float prev_time = (float)glfwGetTime();
     float delta_t;
@@ -486,10 +486,13 @@ int main(int argc, char *argv[])
         glCullFace(GL_BACK);
 
         // Desenhamos o modelo da lua
-        model = Matrix_Translate(30.0f, 20.0f, -30.0f) * Matrix_Scale(4.0f, 4.0f, 4.0f);
+        model = Matrix_Translate(10.0f, 10.0f, -10.0f) * Matrix_Scale(4.0f, 4.0f, 4.0f);
         glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
         glUniform1i(g_object_id_uniform, MOON);
         DrawVirtualObject("moon");
+
+        // Definimos HitSphere da lua
+        HitSphere MoonHitSphere = {glm::vec3(20.0f, 20.0f, -20.0f), 8.0};
 
         // Desenhamos o modelo da nave
         model = Matrix_Translate(spaceship_position.x, spaceship_position.y, spaceship_position.z)
@@ -564,7 +567,8 @@ int main(int argc, char *argv[])
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid2HitBox) ||
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid3HitBox) ||
             SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid4HitBox) ||
-            SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid5HitBox))
+            SpaceshipAsteroidCollision(SpaceshipHitBox, Asteroid5HitBox) ||
+            SpaceshipMoonCollision(SpaceshipHitBox, MoonHitSphere))
         {
             // Spaceship retorna para origem
             displacement = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
