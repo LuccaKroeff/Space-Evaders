@@ -163,7 +163,17 @@ void main()
         vec3 Kd0 = texture(TextureImage5, vec2(U,V)).rgb;
         vec3 Kd1 = texture(TextureImage4, vec2(U,V)).rgb;
 
-        color.rgb = (Kd0 + Kd1) / 2;
+        Ks = vec3(0.2f, 0.2f, 0.2f);
+
+        q = 30;
+
+        Ka = (Kd0 + Kd1) / 4;
+
+        vec3 lambert = (Kd0 + Kd1)/2 * I * max(0,dot(n,l));
+        vec3 ambient_term = Ka * Ia;
+        vec3 BlinnPhong_term = Ks * I * pow(dot(n,h),q);
+
+        color.rgb = lambert + ambient_term + BlinnPhong_term;
 
     }
     else if ( object_id == SPACESHIP )
